@@ -106,3 +106,6 @@ print(f"AUC-ROC: {roc_auc_score(y_test, y_probs):.8f}")
 # Print classification report
 y_pred = rf_smote.predict(X_test)
 print(classification_report(y_test, y_pred))
+
+# Export model
+joblib.dump(rf_smote, gzip.open('model/rf_smote.dat.gz', "wb"))
