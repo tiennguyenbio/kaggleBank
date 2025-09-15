@@ -1,11 +1,13 @@
 # Import libraries
 import pandas as pd
+import numpy
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
+from imblearn.over_sampling import SMOTE
 from collections import Counter
 import joblib
 import gzip
