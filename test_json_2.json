@@ -1,0 +1,36 @@
+[
+  {
+    "id":750000,
+    "age":32,
+    "job":"blue-collar",
+    "marital":"married",
+    "education":"secondary",
+    "balance":1397,
+    "housing":"yes",
+    "loan":"no",
+    "contact":"unknown",
+    "day":21,
+    "month":"may",
+    "campaign":1,
+    "pdays":-1,
+    "previous":0,
+    "poutcome":"unknown"
+  },
+  {
+    "id":750001,
+    "age":44,
+    "job":"management",
+    "marital":"married",
+    "education":"tertiary",
+    "balance":23,
+    "housing":"yes",
+    "loan":"no",
+    "contact":"cellular",
+    "day":3,
+    "month":"apr",
+    "campaign":2,
+    "pdays":-1,
+    "previous":0,
+    "poutcome":"unknown"
+  }
+]
