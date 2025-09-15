@@ -7,8 +7,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
-from imblearn.over_sampling import SMOTENC
-from collections import Counter
 import joblib
 import gzip
 
@@ -21,6 +19,7 @@ train['job'] = train['job'].str.replace('admin.', 'admin', regex=False)
 train = train.drop(columns=['default','duration'])
 
 # Feature Engineering Pipeline
+
 class BankPreprocessor(BaseEstimator, TransformerMixin):
     def __init__(self):
         # Age bins
@@ -33,66 +32,53 @@ class BankPreprocessor(BaseEstimator, TransformerMixin):
             'management': 0, 'retired': 0, 'self-employed': 3, 'services': 2,
             'student': 1, 'technician': 2, 'unemployed': 3, 'unknown': 3
         }
-        self.cluster_mapping = {0:'senior', 1:'student', 2:'worker', 3:'independent'}
+        self.cluster_mapping = {0: 'senior', 1: 'student', 2: 'worker', 3: 'independent'}
         self.job_to_group = {job: self.cluster_mapping[cluster] for job, cluster in self.pca_clusters.items()}
 
         # Columns to encode
-        self.categorical_cols = ['poutcome', 'contact', 'education', 'marital', 'month',
-                                 'housing','loan','job_group','age_group']
+        self.categorical_cols = [
+            'poutcome', 'contact', 'education', 'marital', 'month',
+            'housing', 'loan', 'job_group', 'age_group'
+        ]
         self.le_dict = {}
 
-    def _create_features(self, X):
-        """Create derived features consistently for both fit and transform."""
+    def _add_features(self, X):
+        """Create derived columns consistently for both fit and transform"""
         X = X.copy()
         X['age_group'] = pd.cut(X['age'], bins=self.age_bins, labels=self.age_labels)
         X['job_group'] = X['job'].map(self.job_to_group)
-        X['was_contacted_before'] = X['pdays'].apply(lambda x: 0 if x == -1 else 1)
+        X['was_contacted_before'] = (X['pdays'] != -1).astype(int)
         return X
 
     def fit(self, X, y=None):
-        X = self._create_features(X)
-
-        # Fit LabelEncoders
+        X = self._add_features(X)
         for col in self.categorical_cols:
             le = LabelEncoder()
             le.fit(X[col].astype(str).fillna('Unknown'))
             self.le_dict[col] = le
-
         return self
 
     def transform(self, X):
-        X = self._create_features(X)
-
-        # Apply LabelEncoders
+        X = self._add_features(X)
         for col, le in self.le_dict.items():
             X[col] = le.transform(X[col].astype(str).fillna('Unknown'))
+        
+        drop_cols = ['id', 'job', 'age']
+        return X.drop(columns=[c for c in drop_cols if c in X.columns])
 
-        # Drop unused columns
-        drop_cols = ['id','job','age']
-        X = X.drop(columns=[c for c in drop_cols if c in X.columns])
-
-        return X
-
-# --- Create pipeline ---
-pipe = Pipeline([
-    ('preprocessor', BankPreprocessor()),
-    ('classifier', RandomForestClassifier())
-])
-
-# Train test split with SMOTENC
+# Train test split
 X = train.drop(columns=['y'])
 y = train['y']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-categorical_cols = ['job','marital','education','housing',
-                    'loan','contact','month','poutcome']
-categorical_features_mask = X.columns.isin(categorical_cols).tolist()
+# Pipeline
+preprocessor = BankPreprocessor()
+model = RandomForestClassifier(random_state=42)
 
-resampler = SMOTENC(categorical_features = categorical_features_mask, 
-                    random_state=42)
-X_resampled, y_resampled = resampler.fit_resample(X, y)
-print(sorted(Counter(y_resampled).items()))
-
-X_train, X_test, y_train, y_test = train_test_split(X_resampled, y_resampled, test_size=0.2, random_state=42)
+pipe = Pipeline([
+    ('preprocessor', preprocessor),
+    ('classifier', model)
+])
 
 # Train the model
 pipe.fit(X_train, y_train)
@@ -106,4 +92,4 @@ y_pred = pipe.predict(X_test)
 print(classification_report(y_test, y_pred))
 
 # Export model
-joblib.dump(pipe, gzip.open('model/rf_smotenc.dat.gz', "wb"))
+joblib.dump(pipe, gzip.open('model/pipe.dat.gz', "wb"))
