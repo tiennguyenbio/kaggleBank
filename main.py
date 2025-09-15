@@ -1,12 +1,12 @@
 # Import libraries
 import pandas as pd
+import numpy
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
-from collections import Counter
 import joblib
 import gzip
 
@@ -25,7 +25,7 @@ class BankPreprocessor(BaseEstimator, TransformerMixin):
         # Age bins
         self.age_bins = [18, 25, 35, 45, 55, 65, 100]
         self.age_labels = ['18-24', '25-34', '35-44', '45-54', '55-64', '65+']
-        
+
         # Job clustering
         self.pca_clusters = {
             'admin.': 2, 'blue-collar': 2, 'entrepreneur': 2, 'housemaid': 2,
@@ -34,7 +34,7 @@ class BankPreprocessor(BaseEstimator, TransformerMixin):
         }
         self.cluster_mapping = {0: 'senior', 1: 'student', 2: 'worker', 3: 'independent'}
         self.job_to_group = {job: self.cluster_mapping[cluster] for job, cluster in self.pca_clusters.items()}
-        
+
         # Columns to encode
         self.categorical_cols = [
             'poutcome', 'contact', 'education', 'marital', 'month',
