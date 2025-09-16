@@ -44,26 +44,38 @@ def home():
     return render_template('index.html')
 
 @app.route('/predict', methods=['POST'])
-
 def predict():
     if model is None:
         return {'error': 'Model is not available.'}, 503
 
-    # --- Get data ---
-    feature_data = request.get_json(silent=True)
-    
+    feature_data = None
+
+    # --- 1. Check if JSON file was uploaded ---
+    if 'json_file' in request.files:
+        file = request.files['json_file']
+        if file.filename != '':
+            try:
+                import json
+                feature_data = json.load(file)
+            except Exception as e:
+                return {'error': f'Error reading JSON file: {e}'}, 400
+
+    # --- 2. Check if JSON was sent in request body ---
+    if feature_data is None:
+        feature_data = request.get_json(silent=True)
+
+    # --- 3. Check if manual form submission ---
     if not feature_data:
-        # Fallback to form submission (single record)
         if request.form:
             feature_data = [{key: request.form[key] for key in request.form}]
         else:
             return {'error': 'No data received.'}, 400
-    else:
-        # If single dict is passed, wrap it in a list
-        if isinstance(feature_data, dict):
-            feature_data = [feature_data]
-        elif not isinstance(feature_data, list):
-            return {'error': 'JSON input must be a dict or list of dicts.'}, 400
+
+    # --- Normalize input format (always a list of dicts) ---
+    if isinstance(feature_data, dict):
+        feature_data = [feature_data]
+    elif not isinstance(feature_data, list):
+        return {'error': 'JSON input must be a dict or list of dicts.'}, 400
 
     # --- Convert numeric fields ---
     numeric_fields = ["id", "age", "balance", "day", "campaign", "pdays", "previous"]
@@ -73,15 +85,15 @@ def predict():
                 try:
                     record[field] = float(record[field])
                 except ValueError:
-                    return {'error': f'Invalid value for {field} in record {record.get("id", "Unknown")}'}, 400
+                    return {
+                        'error': f'Invalid value for {field} in record {record.get("id", "Unknown")}'
+                    }, 400
 
     # --- Create DataFrame ---
     try:
         df = pd.DataFrame(feature_data)
         print("Feature DataFrame:\n", df)
     except Exception as e:
-        print("Error creating DataFrame:", e)
-        traceback.print_exc()
         return {'error': f"Error creating DataFrame: {str(e)}"}, 400
 
     # --- Get predictions ---
@@ -96,16 +108,18 @@ def predict():
             label = pred.get('label', 'Unknown')
             formatted_results.append(f"ID: {cust_id}. Prediction: {label}")
 
-        # Join multiple records with a line break
-        output_html = "<br>".join(formatted_results)
-        output_json = {"predictions": [f"ID: {int(rec.get('id',0))}. Prediction: {pred.get('label','Unknown')}" 
-                                for rec, pred in zip(feature_data, predictions)]}
-        if request.is_json:
-            return jsonify(output_json), 200
-        else:
+        output_html = "<ul>" + "".join(f"<li>{res}</li>" for res in formatted_results) + "</ul>"
+        output_json = {"predictions": formatted_results}
+
+        # --- Decide response type ---
+        if request.form:  # manual form
             return render_template('index.html', prediction_text=output_html)
+        elif 'json_file' in request.files:  # file upload
+            # Render HTML with formatted results
+            return render_template('index.html', prediction_text=output_html)
+        else:  # API JSON request
+            return jsonify(output_json), 200
 
     except Exception as e:
         print("Unexpected error in prediction:", e)
-        traceback.print_exc()
         return {'error': str(e)}, 500
