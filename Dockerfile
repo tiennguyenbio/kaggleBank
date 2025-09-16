@@ -11,6 +11,7 @@ COPY model /app/model
 COPY ms /app/ms
 
 # Install dependencies
+RUN pip install --no-cache-dir --progress-bar=off -r requirements.txt
 RUN pip install -r requirements.txt
 
 # Expose port
