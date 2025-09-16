@@ -3,26 +3,79 @@
 <head>
   <meta charset="UTF-8">
   <title>Bank Marketing Prediction</title>
-  <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
-  <link href='https://fonts.googleapis.com/css?family=Arimo' rel='stylesheet' type='text/css'>
-  <link href='https://fonts.googleapis.com/css?family=Hind:300' rel='stylesheet' type='text/css'>
-  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300' rel='stylesheet' type='text/css'>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <style>
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 15px;
-      margin-top: 20px;
+    body {
+      font-family: Calibri, Arial, Helvetica, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
     }
 
-    .form-grid input {
-      padding: 10px;
-      font-size: 14px;
-      border: 1px solid #ccc;
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 25px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .toggle-btns {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .toggle-btns button {
+      flex: 1;
+      cursor: pointer;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
       border-radius: 8px;
+      background-color: #007bff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    .toggle-btns button:hover {
+      background-color: #0056b3;
+    }
+
+    form {
+      margin-top: 15px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 15px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input, select {
       width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
       box-sizing: border-box;
+    }
+
+    .note {
+      font-size: 12px;
+      color: #555;
+      margin-top: 3px;
     }
 
     .btn {
@@ -32,45 +85,210 @@
       border-radius: 8px;
       width: 100%;
       cursor: pointer;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      transition: background 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #218838;
     }
 
     #predi {
-      margin-top: 30px;
+      margin-top: 25px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #e9ffe9;
+      text-align: center;
       font-size: 20px;
-      color: #333;
+      font-weight: bold;
+      color: #155724;
     }
+
+    .hidden { display: none; }
   </style>
 </head>
 
 <body>
-  <div class="login">
-    <h1>Bank Marketing Model</h1>
+  <div class="container">
+    <h1>Bank Marketing Prediction</h1>
 
-    <form action="http://127.0.0.1:8000/predict" method="post">
-      <div class="form-grid">
-        <input type="text" name="id" placeholder="ID" required="required" />
-        <input type="text" name="age" placeholder="Age" required="required" />
-        <input type="text" name="job" placeholder="Job" required="required" />
-        <input type="text" name="marital" placeholder="Marital Status" required="required" />
-        <input type="text" name="education" placeholder="Education" required="required" />
-        <input type="text" name="balance" placeholder="Balance" required="required" />
-        <input type="text" name="housing" placeholder="Housing Loan (yes/no)" required="required" />
-        <input type="text" name="loan" placeholder="Personal Loan (yes/no)" required="required" />
-        <input type="text" name="contact" placeholder="Contact Type" required="required" />
-        <input type="text" name="day" placeholder="Day" required="required" />
-        <input type="text" name="month" placeholder="Month" required="required" />
-        <input type="text" name="campaign" placeholder="Campaign Contacts" required="required" />
-        <input type="text" name="pdays" placeholder="Days Since Previous Contact" required="required" />
-        <input type="text" name="previous" placeholder="Number of Previous Contacts" required="required" />
-        <input type="text" name="poutcome" placeholder="Previous Outcome" required="required" />
-      </div>
+    <div class="toggle-btns">
+      <button type="button" onclick="showSection('upload')">Upload JSON File</button>
+      <button type="button" onclick="showSection('manual')">Manual Input</button>
+    </div>
 
-      <button type="submit" class="btn btn-primary btn-block btn-large">Predict</button>
-    </form>
+    <!-- Upload Section -->
+    <div id="upload-section">
+      <form action="http://127.0.0.1:8000/predict" method="post" enctype="multipart/form-data">
+        <label for="json_file">Upload JSON File</label>
+        <input type="file" id="json_file" name="json_file" accept=".json" />
+        <div class="note">Upload a JSON file containing one or more records.</div>
+        <button type="submit" class="btn">Predict</button>
+      </form>
 
-    {% if prediction_text %}
-      <h1 id="predi">{{ prediction_text }}</h1>
-    {% endif %}
+      {% if prediction_text %}
+        <div id="predi">{{ prediction_text|safe }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Manual Input Section -->
+    <div id="manual-section" class="hidden">
+      <form action="http://127.0.0.1:8000/predict" method="post">
+        <div class="form-grid">
+          <div>
+            <label for="id">ID</label>
+            <input type="number" id="id" name="id" placeholder="e.g. 750000"
+                   value="{{ request.form.get('id', '') }}" required min="1" step="1" />
+            <div class="note">Positive integer only</div>
+          </div>
+
+          <div>
+            <label for="age">Age</label>
+            <input type="number" id="age" name="age" placeholder="e.g. 32"
+                   value="{{ request.form.get('age', '') }}" required min="18" max="100" />
+          </div>
+
+          <div>
+            <label for="job">Job</label>
+            <select id="job" name="job" required>
+              <option value="" disabled {% if not request.form.get('job') %}selected{% endif %}>Select your job</option>
+              {% for j in ['admin','blue-collar','entrepreneur','housemaid','management','retired','self-employed','services','student','technician','unemployed','unknown'] %}
+                <option value="{{ j }}" {% if request.form.get('job')==j %}selected{% endif %}>{{ j.replace('-', ' ').title() }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="marital">Marital Status</label>
+            <select id="marital" name="marital" required>
+              <option value="" disabled {% if not request.form.get('marital') %}selected{% endif %}>Select marital status</option>
+              {% for m in ['single','married','divorced'] %}
+                <option value="{{ m }}" {% if request.form.get('marital')==m %}selected{% endif %}>{{ m.title() }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="education">Education</label>
+            <select id="education" name="education" required>
+              <option value="" disabled {% if not request.form.get('education') %}selected{% endif %}>Select education level</option>
+              {% for e in ['primary','secondary','tertiary','unknown'] %}
+                <option value="{{ e }}" {% if request.form.get('education')==e %}selected{% endif %}>{{ e.title() }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="balance">Balance (€)</label>
+            <input type="number" id="balance" name="balance" placeholder="e.g. 1397"
+                   value="{{ request.form.get('balance', '') }}" required />
+            <div class="note">Average yearly balance</div>
+          </div>
+
+          <div>
+            <label for="housing">Housing Loan</label>
+            <select id="housing" name="housing" required>
+              <option value="" disabled {% if not request.form.get('housing') %}selected{% endif %}>Has housing loan?</option>
+              <option value="yes" {% if request.form.get('housing')=='yes' %}selected{% endif %}>Yes</option>
+              <option value="no" {% if request.form.get('housing')=='no' %}selected{% endif %}>No</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="loan">Personal Loan</label>
+            <select id="loan" name="loan" required>
+              <option value="" disabled {% if not request.form.get('loan') %}selected{% endif %}>Has personal loan?</option>
+              <option value="yes" {% if request.form.get('loan')=='yes' %}selected{% endif %}>Yes</option>
+              <option value="no" {% if request.form.get('loan')=='no' %}selected{% endif %}>No</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="contact">Contact Type</label>
+            <select id="contact" name="contact" required>
+              <option value="" disabled {% if not request.form.get('contact') %}selected{% endif %}>Select contact type</option>
+              {% for c in ['cellular','telephone','unknown'] %}
+                <option value="{{ c }}" {% if request.form.get('contact')==c %}selected{% endif %}>{{ c.title() }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="day">Last Contact Day</label>
+            <select id="day" name="day" required>
+              <option value="" disabled>Select Day (1–31)</option>
+              {% for d in range(1, 32) %}
+                <option value="{{ d }}" {% if request.form.get('day')==d|string %}selected{% endif %}>{{ d }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="month">Last Contact Month</label>
+            <select id="month" name="month" required>
+              <option value="" disabled>Select month</option>
+              {% for m, name in [('jan','January'),('feb','February'),('mar','March'),('apr','April'),('may','May'),('jun','June'),('jul','July'),('aug','August'),('sep','September'),('oct','October'),('nov','November'),('dec','December')] %}
+                <option value="{{ m }}" {% if request.form.get('month')==m %}selected{% endif %}>{{ name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="campaign">Campaign Contacts</label>
+            <input type="number" id="campaign" name="campaign" min="1"
+                   placeholder="e.g., 3" value="{{ request.form.get('campaign', '') }}" required />
+            <div class="note">Number of contacts during this campaign (includes last contact)</div>
+          </div>
+
+          <div>
+            <label for="pdays">Days Since Previous Contact</label>
+            <input type="number" id="pdays" name="pdays"
+                   placeholder="-1 if not contacted before"
+                   value="{{ request.form.get('pdays', '') }}" required />
+          </div>
+
+          <div>
+            <label for="previous">Previous Campaign Contacts</label>
+            <input type="number" id="previous" name="previous" min="0"
+                   placeholder="e.g., 2" value="{{ request.form.get('previous', '') }}" required />
+            <div class="note">Number of contacts performed before this campaign</div>
+          </div>
+
+          <div>
+            <label for="poutcome">Previous Outcome</label>
+            <select id="poutcome" name="poutcome" required>
+              <option value="" disabled>Select previous outcome</option>
+              {% for p in ['success','failure','unknown'] %}
+                <option value="{{ p }}" {% if request.form.get('poutcome')==p %}selected{% endif %}>{{ p.title() }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+        </div>
+
+        <button type="submit" class="btn">Predict</button>
+      </form>
+
+      {% if prediction_text %}
+        <div id="predi">{{ prediction_text|safe }}</div>
+      {% endif %}
+    </div>
+
   </div>
+
+  <script>
+    function showSection(section) {
+      if(section === 'manual') {
+        document.getElementById('manual-section').classList.remove('hidden');
+        document.getElementById('upload-section').classList.add('hidden');
+      } else {
+        document.getElementById('manual-section').classList.add('hidden');
+        document.getElementById('upload-section').classList.remove('hidden');
+      }
+    }
+  </script>
 </body>
 </html>
