@@ -6,7 +6,7 @@
   <style>
     body {
       font-family: Calibri, Arial, Helvetica, sans-serif;
-      background-color: #f5f5f5;
+      background-color: #e0e4e7;
       margin: 0;
       padding: 0;
     }
@@ -22,89 +22,95 @@
 
     h1 {
       text-align: center;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
+      color: #008b8b;
     }
 
     .toggle-btns {
       display: flex;
       gap: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
 
     .toggle-btns button {
       flex: 1;
       cursor: pointer;
       padding: 12px;
-      font-size: 16px;
+      font-size: 18px;
       border: none;
       border-radius: 8px;
-      background-color: #007bff;
+      background-color: #d1e0de;
       color: white;
       transition: background 0.3s;
     }
 
     .toggle-btns button:hover {
-      background-color: #0056b3;
+      background-color: #008b8b;
     }
 
     form {
-      margin-top: 15px;
+      margin-top: 10px;
     }
 
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 15px;
+      grid-template-columns: repeat(3, 1fr);
+      /* grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); */
+      gap: 25px;
     }
 
     label {
-      font-weight: bold;
       display: block;
       margin-bottom: 5px;
+      color: #008b8b;
+      font-size: 14px;
+      font-weight: bold;
     }
 
     input, select {
       width: 100%;
       padding: 10px;
       border-radius: 6px;
-      border: 1px solid #ccc;
+      border: 1px solid #e0e4e7;
       font-size: 14px;
       box-sizing: border-box;
+      background-color: #e0e4e7;
     }
 
     .note {
       font-size: 12px;
-      color: #555;
+      color: #008b8b;
       margin-top: 3px;
     }
 
     .btn {
-      margin-top: 20px;
-      padding: 12px;
-      font-size: 16px;
+      margin-top: 2%;
+      padding: 15px;
+      font-size: 20px;
       border-radius: 8px;
       width: 100%;
       cursor: pointer;
-      background-color: #28a745;
+      background-color: #008b8b;
       color: white;
       border: none;
       transition: background 0.3s;
+      font-weight: bold;
     }
 
     .btn:hover {
-      background-color: #218838;
+      background-color: #008b8b;
     }
 
     #predi {
-      margin-top: 25px;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      background-color: #e9ffe9;
+      margin-top: 5px;
+      padding: 5px;
+      border: 1px solid #e0e4e7;
+      border-radius: 5px;
+      background-color: #e0e4e7;
       text-align: center;
-      font-size: 20px;
+      font-size: 16px;
       font-weight: bold;
-      color: #155724;
+      color: #404040;
     }
 
     .hidden { display: none; }
@@ -121,21 +127,21 @@
     </div>
 
     <!-- Upload Section -->
-    <div id="upload-section">
+    <div id="upload-section" class="{% if submission_type != 'upload' %}hidden{% endif %}">
       <form action="http://127.0.0.1:8000/predict" method="post" enctype="multipart/form-data">
         <label for="json_file">Upload JSON File</label>
         <input type="file" id="json_file" name="json_file" accept=".json" />
         <div class="note">Upload a JSON file containing one or more records.</div>
-        <button type="submit" class="btn">Predict</button>
+        <button type="submit" class="btn">Predict subscription outcome</button>
       </form>
 
-      {% if prediction_text %}
+      {% if submission_type == 'upload' and prediction_text %}
         <div id="predi">{{ prediction_text|safe }}</div>
       {% endif %}
     </div>
 
     <!-- Manual Input Section -->
-    <div id="manual-section" class="hidden">
+    <div id="manual-section" class="{% if submission_type != 'manual' %}hidden{% endif %}">
       <form action="http://127.0.0.1:8000/predict" method="post">
         <div class="form-grid">
           <div>
@@ -185,7 +191,7 @@
             <label for="balance">Balance (€)</label>
             <input type="number" id="balance" name="balance" placeholder="e.g. 1397"
                    value="{{ request.form.get('balance', '') }}" required />
-            <div class="note">Average yearly balance</div>
+            <div class="note">Average yearly balance (euros)</div>
           </div>
 
           <div>
@@ -238,10 +244,10 @@
 
           <div>
             <label for="campaign">Campaign Contacts</label>
-            <input type="number" id="campaign" name="campaign" min="1"
-                   placeholder="e.g., 3" value="{{ request.form.get('campaign', '') }}" required />
-            <div class="note">Number of contacts during this campaign (includes last contact)</div>
-          </div>
+            <input type="number" id="campaign" name="campaign" min="0"
+                   placeholder="Total contacts so far for this campaign" 
+                   value="{{ request.form.get('campaign', '') }}" required />
+          </div>          
 
           <div>
             <label for="pdays">Days Since Previous Contact</label>
@@ -253,8 +259,7 @@
           <div>
             <label for="previous">Previous Campaign Contacts</label>
             <input type="number" id="previous" name="previous" min="0"
-                   placeholder="e.g., 2" value="{{ request.form.get('previous', '') }}" required />
-            <div class="note">Number of contacts performed before this campaign</div>
+                   placeholder="Total of contacts before this campaign" value="{{ request.form.get('previous', '') }}" required />
           </div>
 
           <div>
@@ -269,10 +274,10 @@
 
         </div>
 
-        <button type="submit" class="btn">Predict</button>
+        <button type="submit" class="btn">Predict subscription outcome</button>
       </form>
 
-      {% if prediction_text %}
+      {% if submission_type == 'manual' and prediction_text %}
         <div id="predi">{{ prediction_text|safe }}</div>
       {% endif %}
     </div>
@@ -280,15 +285,37 @@
   </div>
 
   <script>
+    // Show manual or upload section based on parameter
     function showSection(section) {
-      if(section === 'manual') {
-        document.getElementById('manual-section').classList.remove('hidden');
-        document.getElementById('upload-section').classList.add('hidden');
-      } else {
-        document.getElementById('manual-section').classList.add('hidden');
-        document.getElementById('upload-section').classList.remove('hidden');
+      document.getElementById('manual-section').classList.toggle('hidden', section !== 'manual');
+      document.getElementById('upload-section').classList.toggle('hidden', section !== 'upload');
+    }
+  
+    // Auto-toggle based on Flask variable
+    document.addEventListener('DOMContentLoaded', () => {
+      const type = "{{ submission_type|default('manual') }}"; 
+      showSection(type);
+  
+      // Adjust campaign input to show total contacts but send +1
+      const campaignInput = document.getElementById('campaign');
+      if(campaignInput) {
+        campaignInput.addEventListener('input', () => {
+          campaignInput.dataset.backendValue = parseInt(campaignInput.value) + 1;
+        });
       }
+    });
+  
+    // Optionally, before form submit, replace value with backend value
+    const manualForm = document.querySelector('#manual-section form');
+    if(manualForm) {
+      manualForm.addEventListener('submit', (e) => {
+        const campaignInput = document.getElementById('campaign');
+        if(campaignInput && campaignInput.dataset.backendValue) {
+          campaignInput.value = campaignInput.dataset.backendValue;
+        }
+      });
     }
   </script>
+  
 </body>
 </html>
