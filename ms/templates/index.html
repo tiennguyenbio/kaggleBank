@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Bank Marketing Prediction</title>
+  <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Arimo' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Hind:300' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .form-grid input {
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .btn {
+      margin-top: 20px;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    #predi {
+      margin-top: 30px;
+      font-size: 20px;
+      color: #333;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login">
+    <h1>Bank Marketing Model</h1>
+
+    <form action="http://127.0.0.1:8000/predict" method="post">
+      <div class="form-grid">
+        <input type="text" name="id" placeholder="ID" required="required" />
+        <input type="text" name="age" placeholder="Age" required="required" />
+        <input type="text" name="job" placeholder="Job" required="required" />
+        <input type="text" name="marital" placeholder="Marital Status" required="required" />
+        <input type="text" name="education" placeholder="Education" required="required" />
+        <input type="text" name="balance" placeholder="Balance" required="required" />
+        <input type="text" name="housing" placeholder="Housing Loan (yes/no)" required="required" />
+        <input type="text" name="loan" placeholder="Personal Loan (yes/no)" required="required" />
+        <input type="text" name="contact" placeholder="Contact Type" required="required" />
+        <input type="text" name="day" placeholder="Day" required="required" />
+        <input type="text" name="month" placeholder="Month" required="required" />
+        <input type="text" name="campaign" placeholder="Campaign Contacts" required="required" />
+        <input type="text" name="pdays" placeholder="Days Since Previous Contact" required="required" />
+        <input type="text" name="previous" placeholder="Number of Previous Contacts" required="required" />
+        <input type="text" name="poutcome" placeholder="Previous Outcome" required="required" />
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-large">Predict</button>
+    </form>
+
+    {% if prediction_text %}
+      <h1 id="predi">{{ prediction_text }}</h1>
+    {% endif %}
+  </div>
+</body>
+</html>

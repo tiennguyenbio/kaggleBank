@@ -1,9 +1,11 @@
 # ms/routes.py
-from flask import request
+from flask import request, render_template, jsonify
 from ms import app
 from ms.services import get_model_response
 import gzip
 import joblib
+import traceback
+import pandas as pd
 
 # --- Constants and Model Loading ---
 MODEL_NAME = 'Bank Deposit Prediction'
@@ -36,24 +38,74 @@ def health():
         return "Model not loaded", 503 # Service Unavailable
     return "OK", 200
 
+@app.route('/')
+def home():
+    # first load, no prediction
+    return render_template('index.html')
+
 @app.route('/predict', methods=['POST'])
+
 def predict():
-    """Receives a list of feature data in JSON and returns a list of predictions."""
     if model is None:
-        return {'error': 'Model is not available. Please check server logs.'}, 503
+        return {'error': 'Model is not available.'}, 503
 
-    feature_dict = request.get_json()
-    if not feature_dict:
-        return {'error': 'Request body is empty or not in JSON format.'}, 400
+    # --- Get data ---
+    feature_data = request.get_json(silent=True)
+    
+    if not feature_data:
+        # Fallback to form submission (single record)
+        if request.form:
+            feature_data = [{key: request.form[key] for key in request.form}]
+        else:
+            return {'error': 'No data received.'}, 400
+    else:
+        # If single dict is passed, wrap it in a list
+        if isinstance(feature_data, dict):
+            feature_data = [feature_data]
+        elif not isinstance(feature_data, list):
+            return {'error': 'JSON input must be a dict or list of dicts.'}, 400
 
+    # --- Convert numeric fields ---
+    numeric_fields = ["id", "age", "balance", "day", "campaign", "pdays", "previous"]
+    for record in feature_data:
+        for field in numeric_fields:
+            if field in record:
+                try:
+                    record[field] = float(record[field])
+                except ValueError:
+                    return {'error': f'Invalid value for {field} in record {record.get("id", "Unknown")}'}, 400
+
+    # --- Create DataFrame ---
     try:
-    # Get the prediction from the services layer
-        response = get_model_response(feature_dict, model)
-        return response, 200
-    except ValueError as e:
-    # Catches errors from data conversion or other issues in the service
-        return {'error': str(e)}, 400
+        df = pd.DataFrame(feature_data)
+        print("Feature DataFrame:\n", df)
     except Exception as e:
-    # Catch any other unexpected errors
-        print(f"An unexpected error occurred: {e}")
-        return {'error': 'An internal server error occurred.'}, 500
+        print("Error creating DataFrame:", e)
+        traceback.print_exc()
+        return {'error': f"Error creating DataFrame: {str(e)}"}, 400
+
+    # --- Get predictions ---
+    try:
+        response = get_model_response(df, model)
+        predictions = response.get('predictions', [])
+
+        # --- Format output ---
+        formatted_results = []
+        for rec, pred in zip(feature_data, predictions):
+            cust_id = int(rec.get('id', 0))
+            label = pred.get('label', 'Unknown')
+            formatted_results.append(f"ID: {cust_id}. Prediction: {label}")
+
+        # Join multiple records with a line break
+        output_html = "<br>".join(formatted_results)
+        output_json = {"predictions": [f"ID: {int(rec.get('id',0))}. Prediction: {pred.get('label','Unknown')}" 
+                                for rec, pred in zip(feature_data, predictions)]}
+        if request.is_json:
+            return jsonify(output_json), 200
+        else:
+            return render_template('index.html', prediction_text=output_html)
+
+    except Exception as e:
+        print("Unexpected error in prediction:", e)
+        traceback.print_exc()
+        return {'error': str(e)}, 500
