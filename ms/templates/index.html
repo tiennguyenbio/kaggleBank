@@ -48,6 +48,11 @@
       background-color: #008b8b;
     }
 
+    .toggle-btns button.active {
+      background-color: #008b8b;
+      color: white;
+    }
+
     form {
       margin-top: 10px;
     }
@@ -61,7 +66,8 @@
 
     label {
       display: block;
-      margin-bottom: 5px;
+      margin-top: 10px;
+      margin-bottom: 10px;
       color: #008b8b;
       font-size: 14px;
       font-weight: bold;
@@ -79,7 +85,7 @@
 
     .note {
       font-size: 12px;
-      color: #008b8b;
+      color: #404040;
       margin-top: 3px;
     }
 
@@ -114,6 +120,28 @@
     }
 
     .hidden { display: none; }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 12px;
+      color: #404040; 
+    }
+
+    table th, table td {
+      border: 1px solid #ccc;
+      padding: 4px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    table th {
+      background-color: #e0e4e7; 
+    }
+
+    table td {
+      word-wrap: break-word;
+    }
   </style>
 </head>
 
@@ -129,12 +157,23 @@
     <!-- Upload Section -->
     <div id="upload-section" class="{% if submission_type != 'upload' %}hidden{% endif %}">
       <form action="http://127.0.0.1:8000/predict" method="post" enctype="multipart/form-data">
-        <label for="json_file">Upload JSON File</label>
-        <input type="file" id="json_file" name="json_file" accept=".json" />
-        <div class="note">Upload a JSON file containing one or more records.</div>
-        <button type="submit" class="btn">Predict subscription outcome</button>
+        <div>
+          <label for="json_file" style="font-weight: bold; color: #008b8b;">Upload JSON File</label>
+          <input type="file" id="json_file" name="json_file" accept=".json" 
+                 style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #e0e4e7; background-color: #e0e4e7;" required />
+          <div class="note" style="margin-top: 5px; font-size: 12px;">Upload a JSON file containing one or more records.</div>
+        </div>
+    
+        <div class="note" style="font-size: 12px; margin-bottom: 5px;">
+          Need help with JSON input? 
+          <a href="{{ url_for('json_help') }}" target="_blank" style="color: #006666; text-decoration: underline;">See requirements & example</a>
+        </div>
+    
+        <button type="submit" class="btn" style="padding: 15px; font-size: 18px; border-radius: 8px; width: 100%; font-weight: bold;">
+          Predict Subscription Outcome
+        </button>
       </form>
-
+    
       {% if submission_type == 'upload' and prediction_text %}
         <div id="predi">{{ prediction_text|safe }}</div>
       {% endif %}
@@ -154,7 +193,7 @@
           <div>
             <label for="age">Age</label>
             <input type="number" id="age" name="age" placeholder="e.g. 32"
-                   value="{{ request.form.get('age', '') }}" required min="18" max="100" />
+                   value="{{ request.form.get('age', '') }}" required min="18" max="300" />
           </div>
 
           <div>
@@ -188,10 +227,9 @@
           </div>
 
           <div>
-            <label for="balance">Balance (€)</label>
+            <label for="balance">Average Yearly Balance (€)</label>
             <input type="number" id="balance" name="balance" placeholder="e.g. 1397"
-                   value="{{ request.form.get('balance', '') }}" required />
-            <div class="note">Average yearly balance (euros)</div>
+                   value="{{ request.form.get('balance', '') }}" required step="any" />
           </div>
 
           <div>
@@ -225,9 +263,9 @@
           <div>
             <label for="day">Last Contact Day</label>
             <select id="day" name="day" required>
-              <option value="" disabled>Select Day (1–31)</option>
+              <option value="" disabled selected>Select day of the month</option>
               {% for d in range(1, 32) %}
-                <option value="{{ d }}" {% if request.form.get('day')==d|string %}selected{% endif %}>{{ d }}</option>
+                <option value="{{ d }}" {% if request.form.get('day') == d|string %}selected{% endif %}>{{ d }}</option>
               {% endfor %}
             </select>
           </div>
@@ -243,11 +281,11 @@
           </div>
 
           <div>
-            <label for="campaign">Campaign Contacts</label>
+            <label for="campaign">Total Contacts This Campaign</label>
             <input type="number" id="campaign" name="campaign" min="0"
-                   placeholder="Total contacts so far for this campaign" 
-                   value="{{ request.form.get('campaign', '') }}" required />
-          </div>          
+                    placeholder="Including this call"
+                    value="{{ request.form.get('campaign', '') }}" required />
+          </div>       
 
           <div>
             <label for="pdays">Days Since Previous Contact</label>
@@ -257,9 +295,9 @@
           </div>
 
           <div>
-            <label for="previous">Previous Campaign Contacts</label>
-            <input type="number" id="previous" name="previous" min="0"
-                   placeholder="Total of contacts before this campaign" value="{{ request.form.get('previous', '') }}" required />
+            <label for="previous">Total Contacts Before This Campaign</label>
+            <input type="number" id="previous" name="previous" min="0" placeholder="e.g. 1"
+                   value="{{ request.form.get('previous', '') }}" required />
           </div>
 
           <div>
@@ -285,37 +323,28 @@
   </div>
 
   <script>
-    // Show manual or upload section based on parameter
     function showSection(section) {
+      // Show/hide sections
       document.getElementById('manual-section').classList.toggle('hidden', section !== 'manual');
       document.getElementById('upload-section').classList.toggle('hidden', section !== 'upload');
+  
+      // Handle active button
+      const buttons = document.querySelectorAll('.toggle-btns button');
+      buttons.forEach(btn => btn.classList.remove('active'));
+  
+      if (section === 'manual') {
+        buttons[1].classList.add('active'); // second button
+      } else if (section === 'upload') {
+        buttons[0].classList.add('active'); // first button
+      }
     }
   
     // Auto-toggle based on Flask variable
     document.addEventListener('DOMContentLoaded', () => {
-      const type = "{{ submission_type|default('manual') }}"; 
+      const type = "{{ submission_type|default('upload') }}"; // default to upload
       showSection(type);
-  
-      // Adjust campaign input to show total contacts but send +1
-      const campaignInput = document.getElementById('campaign');
-      if(campaignInput) {
-        campaignInput.addEventListener('input', () => {
-          campaignInput.dataset.backendValue = parseInt(campaignInput.value) + 1;
-        });
-      }
     });
-  
-    // Optionally, before form submit, replace value with backend value
-    const manualForm = document.querySelector('#manual-section form');
-    if(manualForm) {
-      manualForm.addEventListener('submit', (e) => {
-        const campaignInput = document.getElementById('campaign');
-        if(campaignInput && campaignInput.dataset.backendValue) {
-          campaignInput.value = campaignInput.dataset.backendValue;
-        }
-      });
-    }
-  </script>
+  </script>  
   
 </body>
 </html>
