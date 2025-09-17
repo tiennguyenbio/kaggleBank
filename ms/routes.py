@@ -43,74 +43,11 @@ def home():
     # first load, no prediction
     return render_template('index.html')
 
+@app.route('/json_help')
+def json_help():
+    return render_template('json_help.html')
+
 @app.route('/predict', methods=['POST'])
-# def predict():
-#     if model is None:
-#         return {'error': 'Model is not available.'}, 503
-
-#     feature_data = None
-#     submission_type = None  # "manual" or "upload"
-
-#     # --- 1. JSON file upload ---
-#     if 'json_file' in request.files:
-#         file = request.files['json_file']
-#         if file.filename != '':
-#             try:
-#                 import json
-#                 feature_data = json.load(file)
-#                 submission_type = "upload"
-#             except Exception as e:
-#                 return {'error': f'Error reading JSON file: {e}'}, 400
-
-#     # --- 2. JSON API ---
-#     if feature_data is None:
-#         feature_data = request.get_json(silent=True)
-#         if feature_data:
-#             submission_type = "upload"
-
-#     # --- 3. Manual form ---
-#     if not feature_data:
-#         if request.form:
-#             feature_data = [{key: request.form[key] for key in request.form}]
-#             submission_type = "manual"
-#         else:
-#             return {'error': 'No data received.'}, 400
-
-#     # --- Normalize input format ---
-#     if isinstance(feature_data, dict):
-#         feature_data = [feature_data]
-#     elif not isinstance(feature_data, list):
-#         return {'error': 'JSON input must be a dict or list of dicts.'}, 400
-
-#     # --- Convert numeric fields ---
-#     numeric_fields = ["id", "age", "balance", "day", "campaign", "pdays", "previous"]
-#     for record in feature_data:
-#         for field in numeric_fields:
-#             if field in record:
-#                 try:
-#                     record[field] = float(record[field])
-#                 except ValueError:
-#                     return {
-#                         'error': f'Invalid value for {field} in record {record.get("id", "Unknown")}'
-#                     }, 400
-
-#     # --- DataFrame & Prediction ---
-#     try:
-#         df = pd.DataFrame(feature_data)
-#         response = get_model_response(df, model)
-#         predictions = response.get('predictions', [])
-#         formatted_results = [f"ID: {int(r.get('id',0))}. Prediction: {p.get('label','Unknown')}"
-#                              for r,p in zip(feature_data, predictions)]
-#         output_html = "<ul>" + "".join(f"<li>{res}</li>" for res in formatted_results) + "</ul>"
-#     except Exception as e:
-#         return {'error': str(e)}, 500
-
-#     # --- Render template with flags ---
-#     return render_template(
-#         'index.html',
-#         prediction_text=output_html,
-#         submission_type=submission_type
-#     )
 def predict():
     if model is None:
         return {'error': 'Model is not available.'}, 503
@@ -155,11 +92,7 @@ def predict():
         for field in numeric_fields:
             if field in record:
                 try:
-                    value = float(record[field])
-                    # Add 1 to campaign for manual or file input if needed
-                    if field == "campaign":
-                        value += 1
-                    record[field] = value
+                    record[field] = float(record[field])
                 except ValueError:
                     return {
                         'error': f'Invalid value for {field} in record {record.get("id", "Unknown")}'
