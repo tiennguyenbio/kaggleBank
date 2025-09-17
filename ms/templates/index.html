@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Bank Marketing Prediction</title>
+  <style>
+    body {
+      font-family: Calibri, Arial, Helvetica, sans-serif;
+      background-color: #e0e4e7;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 25px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #008b8b;
+    }
+
+    .toggle-btns {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .toggle-btns button {
+      flex: 1;
+      cursor: pointer;
+      padding: 12px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      background-color: #d1e0de;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    .toggle-btns button:hover {
+      background-color: #008b8b;
+    }
+
+    .toggle-btns button.active {
+      background-color: #008b8b;
+      color: white;
+    }
+
+    form {
+      margin-top: 10px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      /* grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); */
+      gap: 25px;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      color: #008b8b;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #e0e4e7;
+      font-size: 14px;
+      box-sizing: border-box;
+      background-color: #e0e4e7;
+    }
+
+    .note {
+      font-size: 12px;
+      color: #404040;
+      margin-top: 3px;
+    }
+
+    .btn {
+      margin-top: 2%;
+      padding: 15px;
+      font-size: 20px;
+      border-radius: 8px;
+      width: 100%;
+      cursor: pointer;
+      background-color: #008b8b;
+      color: white;
+      border: none;
+      transition: background 0.3s;
+      font-weight: bold;
+    }
+
+    .btn:hover {
+      background-color: #008b8b;
+    }
+
+    #predi {
+      margin-top: 5px;
+      padding: 5px;
+      border: 1px solid #e0e4e7;
+      border-radius: 5px;
+      background-color: #e0e4e7;
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+      color: #404040;
+    }
+
+    .hidden { display: none; }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 12px;
+      color: #404040; 
+    }
+
+    table th, table td {
+      border: 1px solid #ccc;
+      padding: 4px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    table th {
+      background-color: #e0e4e7; 
+    }
+
+    table td {
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Bank Marketing Prediction</h1>
+
+    <div class="toggle-btns">
+      <button type="button" onclick="showSection('upload')">Upload JSON File</button>
+      <button type="button" onclick="showSection('manual')">Manual Input</button>
+    </div>
+
+    <!-- Upload Section -->
+    <div id="upload-section" class="{% if submission_type != 'upload' %}hidden{% endif %}">
+      <form action="http://127.0.0.1:8000/predict" method="post" enctype="multipart/form-data">
+        <div>
+          <label for="json_file" style="font-weight: bold; color: #008b8b;">Upload JSON File</label>
+          <input type="file" id="json_file" name="json_file" accept=".json" 
+                 style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #e0e4e7; background-color: #e0e4e7;" required />
+          <div class="note" style="margin-top: 5px; font-size: 12px;">Upload a JSON file containing one or more records.</div>
+        </div>
+    
+        <div class="note" style="font-size: 12px; margin-bottom: 5px;">
+          Need help with JSON input? 
+          <a href="{{ url_for('json_help') }}" target="_blank" style="color: #006666; text-decoration: underline;">See requirements & example</a>
+        </div>
+    
+        <button type="submit" class="btn" style="padding: 15px; font-size: 18px; border-radius: 8px; width: 100%; font-weight: bold;">
+          Predict Subscription Outcome
+        </button>
+      </form>
+    
+      {% if submission_type == 'upload' and prediction_text %}
+        <div id="predi">{{ prediction_text|safe }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Manual Input Section -->
+    <div id="manual-section" class="{% if submission_type != 'manual' %}hidden{% endif %}">
+      <form action="http://127.0.0.1:8000/predict" method="post">
+        <div class="form-grid">
+          <div>
+            <label for="id">ID</label>
+            <input type="number" id="id" name="id" placeholder="e.g. 750000"
+                   value="{{ request.form.get('id', '') }}" required min="1" step="1" />
+            <div class="note">Positive integer only</div>
+          </div>
+
+          <div>
+            <label for="age">Age</label>
+            <input type="number" id="age" name="age" placeholder="e.g. 32"
+                   value="{{ request.form.get('age', '') }}" required min="18" max="300" />
+          </div>
+
+          <div>
+            <label for="job">Job</label>
+            <select id="job" name="job" required>
+              <option value="" disabled {% if not request.form.get('job') %}selected{% endif %}>Select your job</option>
+              {% for j in ['admin','blue-collar','entrepreneur','housemaid','management','retired','self-employed','services','student','technician','unemployed','unknown'] %}
+                <option value="{{ j }}" {% if request.form.get('job')==j %}selected{% endif %}>{{ j.replace('-', ' ').title() }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="marital">Marital Status</label>
+            <select id="marital" name="marital" required>
+              <option value="" disabled {% if not request.form.get('marital') %}selected{% endif %}>Select marital status</option>
+              {% for m in ['single','married','divorced'] %}
+                <option value="{{ m }}" {% if request.form.get('marital')==m %}selected{% endif %}>{{ m.title() }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="education">Education</label>
+            <select id="education" name="education" required>
+              <option value="" disabled {% if not request.form.get('education') %}selected{% endif %}>Select education level</option>
+              {% for e in ['primary','secondary','tertiary','unknown'] %}
+                <option value="{{ e }}" {% if request.form.get('education')==e %}selected{% endif %}>{{ e.title() }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="balance">Average Yearly Balance (€)</label>
+            <input type="number" id="balance" name="balance" placeholder="e.g. 1397"
+                   value="{{ request.form.get('balance', '') }}" required step="any" />
+          </div>
+
+          <div>
+            <label for="housing">Housing Loan</label>
+            <select id="housing" name="housing" required>
+              <option value="" disabled {% if not request.form.get('housing') %}selected{% endif %}>Has housing loan?</option>
+              <option value="yes" {% if request.form.get('housing')=='yes' %}selected{% endif %}>Yes</option>
+              <option value="no" {% if request.form.get('housing')=='no' %}selected{% endif %}>No</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="loan">Personal Loan</label>
+            <select id="loan" name="loan" required>
+              <option value="" disabled {% if not request.form.get('loan') %}selected{% endif %}>Has personal loan?</option>
+              <option value="yes" {% if request.form.get('loan')=='yes' %}selected{% endif %}>Yes</option>
+              <option value="no" {% if request.form.get('loan')=='no' %}selected{% endif %}>No</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="contact">Contact Type</label>
+            <select id="contact" name="contact" required>
+              <option value="" disabled {% if not request.form.get('contact') %}selected{% endif %}>Select contact type</option>
+              {% for c in ['cellular','telephone','unknown'] %}
+                <option value="{{ c }}" {% if request.form.get('contact')==c %}selected{% endif %}>{{ c.title() }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="day">Last Contact Day</label>
+            <select id="day" name="day" required>
+              <option value="" disabled selected>Select day of the month</option>
+              {% for d in range(1, 32) %}
+                <option value="{{ d }}" {% if request.form.get('day') == d|string %}selected{% endif %}>{{ d }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="month">Last Contact Month</label>
+            <select id="month" name="month" required>
+              <option value="" disabled>Select month</option>
+              {% for m, name in [('jan','January'),('feb','February'),('mar','March'),('apr','April'),('may','May'),('jun','June'),('jul','July'),('aug','August'),('sep','September'),('oct','October'),('nov','November'),('dec','December')] %}
+                <option value="{{ m }}" {% if request.form.get('month')==m %}selected{% endif %}>{{ name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="campaign">Total Contacts This Campaign</label>
+            <input type="number" id="campaign" name="campaign" min="0"
+                    placeholder="Including this call"
+                    value="{{ request.form.get('campaign', '') }}" required />
+          </div>       
+
+          <div>
+            <label for="pdays">Days Since Previous Contact</label>
+            <input type="number" id="pdays" name="pdays"
+                   placeholder="-1 if not contacted before"
+                   value="{{ request.form.get('pdays', '') }}" required />
+          </div>
+
+          <div>
+            <label for="previous">Total Contacts Before This Campaign</label>
+            <input type="number" id="previous" name="previous" min="0" placeholder="e.g. 1"
+                   value="{{ request.form.get('previous', '') }}" required />
+          </div>
+
+          <div>
+            <label for="poutcome">Previous Outcome</label>
+            <select id="poutcome" name="poutcome" required>
+              <option value="" disabled>Select previous outcome</option>
+              {% for p in ['success','failure','unknown'] %}
+                <option value="{{ p }}" {% if request.form.get('poutcome')==p %}selected{% endif %}>{{ p.title() }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+        </div>
+
+        <button type="submit" class="btn">Predict subscription outcome</button>
+      </form>
+
+      {% if submission_type == 'manual' and prediction_text %}
+        <div id="predi">{{ prediction_text|safe }}</div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <script>
+    function showSection(section) {
+      // Show/hide sections
+      document.getElementById('manual-section').classList.toggle('hidden', section !== 'manual');
+      document.getElementById('upload-section').classList.toggle('hidden', section !== 'upload');
+  
+      // Handle active button
+      const buttons = document.querySelectorAll('.toggle-btns button');
+      buttons.forEach(btn => btn.classList.remove('active'));
+  
+      if (section === 'manual') {
+        buttons[1].classList.add('active'); // second button
+      } else if (section === 'upload') {
+        buttons[0].classList.add('active'); // first button
+      }
+    }
+  
+    // Auto-toggle based on Flask variable
+    document.addEventListener('DOMContentLoaded', () => {
+      const type = "{{ submission_type|default('upload') }}"; // default to upload
+      showSection(type);
+    });
+  </script>  
+  
+</body>
+</html>

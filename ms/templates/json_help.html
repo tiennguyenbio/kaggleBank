@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>JSON Input Help</title>
+  <style>
+    body { font-family: Calibri, sans-serif; margin: 20px; color: #404040; }
+    table { border-collapse: collapse; width: 100%; font-size: 12px; }
+    th, td { border: 1px solid #ccc; padding: 4px; text-align: left; vertical-align: top; }
+    th { background-color: #f2f2f2; }
+    pre { background-color: #e0e4e7; padding: 10px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h2>JSON Input Requirements</h2>
+  <table style="border-collapse: collapse; width: 100%; font-size: 12px;">
+    <thead>
+      <tr>
+        <th style="border: 1px solid #ccc; padding: 4px; width: 5%;">Field</th>
+        <th style="border: 1px solid #ccc; padding: 4px; width: 45%;">Description</th>
+        <th style="border: 1px solid #ccc; padding: 4px; width: 10%;">Data Type</th>
+        <th style="border: 1px solid #ccc; padding: 4px;">Accepted Values</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="border: 1px solid #ccc; padding: 4px;">id</td><td style="border: 1px solid #ccc; padding: 4px;">Unique identifier for the client record</td><td style="border: 1px solid #ccc; padding: 4px;">integer</td><td style="border: 1px solid #ccc; padding: 4px;">Any positive integer</td></tr>
+      <tr><td style="border: 1px solid #ccc; padding: 4px;">age</td><td style="border: 1px solid #ccc; padding: 4px;">Client age</td><td style="border: 1px solid #ccc; padding: 4px;">integer</td><td style="border: 1px solid #ccc; padding: 4px;">Any positive integer
+      </td></tr>
+      <tr><td style="border: 1px solid #ccc; padding: 4px;">job</td><td style="border: 1px solid #ccc; padding: 4px;">Client job type</td><td style="border: 1px solid #ccc; padding: 4px;">string</td><td style="border: 1px solid #ccc; padding: 4px;">admin, technician, services, management, retired, blue-collar, unemployed, entrepreneur, housemaid, student, self-employed, unknown</td></tr>
+      <tr><td style="border: 1px solid #ccc; padding: 4px;">marital</td><td style="border: 1px solid #ccc; padding: 4px;">Marital status: 'divorced' means divorced or widowed</td><td style="border: 1px solid #ccc; padding: 4px;">string</td><td style="border: 1px solid #ccc; padding: 4px;">married, single, divorced</td></tr>
+      <tr><td style="border: 1px solid #ccc; padding: 4px;">education</td><td style="border: 1px solid #ccc; padding: 4px;">Education level</td><td style="border: 1px solid #ccc; padding: 4px;">string</td><td style="border: 1px solid #ccc; padding: 4px;">primary, secondary, tertiary, unknown</td></tr>
+      <tr><td style="border: 1px solid #ccc; padding: 4px;">balance</td><td style="border: 1px solid #ccc; padding: 4px;">Account balance in euros</td><td style="border: 1px solid #ccc; padding: 4px;">float</td><td style="border: 1px solid #ccc; padding: 4px;">Any numeric value</td></tr>
+      <tr><td style="border: 1px solid #ccc; padding: 4px;">housing</td><td style="border: 1px solid #ccc; padding: 4px;">Has housing loan</td><td style="border: 1px solid #ccc; padding: 4px;">string</td><td style="border: 1px solid #ccc; padding: 4px;">yes, no</td></tr>
+      <tr><td style="border: 1px solid #ccc; padding: 4px;">loan</td><td style="border: 1px solid #ccc; padding: 4px;">Has personal loan</td><td style="border: 1px solid #ccc; padding: 4px;">string</td><td style="border: 1px solid #ccc; padding: 4px;">yes, no</td></tr>
+      <tr><td style="border: 1px solid #ccc; padding: 4px;">contact</td><td style="border: 1px solid #ccc; padding: 4px;">Contact communication type</td><td style="border: 1px solid #ccc; padding: 4px;">string</td><td style="border: 1px solid #ccc; padding: 4px;">cellular, telephone, unknown</td></tr>
+      <tr><td style="border: 1px solid #ccc; padding: 4px;">day</td><td style="border: 1px solid #ccc; padding: 4px;">Day of last contact</td><td style="border: 1px solid #ccc; padding: 4px;">string</td><td style="border: 1px solid #ccc; padding: 4px;">1-31</td></tr>
+      <tr><td style="border: 1px solid #ccc; padding: 4px;">month</td><td style="border: 1px solid #ccc; padding: 4px;">Month of last contact</td><td style="border: 1px solid #ccc; padding: 4px;">string</td><td style="border: 1px solid #ccc; padding: 4px;">jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec</td></tr>
+      <tr><td style="border: 1px solid #ccc; padding: 4px;">campaign</td><td style="border: 1px solid #ccc; padding: 4px;">Total contacts for this campaign including predicted call</td><td style="border: 1px solid #ccc; padding: 4px;">integer</td><td style="border: 1px solid #ccc; padding: 4px;">Any positive integer</td></tr> 
+      <tr><td style="border: 1px solid #ccc; padding: 4px;">pdays</td><td style="border: 1px solid #ccc; padding: 4px;">Days since previous contact (-1 if never contacted)</td><td style="border: 1px solid #ccc; padding: 4px;">integer</td><td style="border: 1px solid #ccc; padding: 4px;">Any integer ≥ -1</td></tr>
+      <tr><td style="border: 1px solid #ccc; padding: 4px;">previous</td><td style="border: 1px solid #ccc; padding: 4px;">Number of contacts before this campaign</td><td style="border: 1px solid #ccc; padding: 4px;">integer</td><td style="border: 1px solid #ccc; padding: 4px;">Any integer >= 0</td></tr>
+      <tr><td style="border: 1px solid #ccc; padding: 4px;">poutcome</td><td style="border: 1px solid #ccc; padding: 4px;">Outcome of previous campaign</td><td style="border: 1px solid #ccc; padding: 4px;">string</td><td style="border: 1px solid #ccc; padding: 4px;">success, failure, unknown</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Example JSON</h3>
+  <pre>
+  [
+    {
+      "id":750000,
+      "age":32,
+      "job":"blue-collar",
+      "marital":"married",
+      "education":"secondary",
+      "balance":1397,
+      "housing":"yes",
+      "loan":"no",
+      "contact":"unknown",
+      "day":21,
+      "month":"may",
+      "campaign":1,
+      "pdays":-1,
+      "previous":0,
+      "poutcome":"unknown"
+    },
+    {
+      "id":750001,
+      "age":44,
+      "job":"management",
+      "marital":"married",
+      "education":"tertiary",
+      "balance":23,
+      "housing":"yes",
+      "loan":"no",
+      "contact":"cellular",
+      "day":3,
+      "month":"apr",
+      "campaign":2,
+      "pdays":-1,
+      "previous":0,
+      "poutcome":"unknown"
+    }
+  ]
+  </pre>
+</body>
+</html>
