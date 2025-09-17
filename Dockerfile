@@ -1,22 +1,19 @@
-# Base image
-FROM python:3.10
+FROM python:3.10-slim
 
-# Set working directory
 WORKDIR /app
 
-# Copy files
-COPY app.py /app
-COPY requirements.txt /app
-COPY model /app/model
-COPY ms /app/ms
+# Limit threads for heavy packages
+ENV OPENBLAS_NUM_THREADS=1
 
-# Install dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir --progress-bar=off -r requirements.txt
-# RUN pip install -r requirements.txt
 
-# Expose port
+COPY app.py .
+COPY ms ./ms
+COPY model ./model
+COPY preprocessing.py .
+
 EXPOSE 8000
 
-# Run with Gunicorn
 ENTRYPOINT ["gunicorn", "-b", "0.0.0.0:8000", "--access-logfile", "-", "--error-logfile", "-", "--timeout", "120"]
 CMD ["app:app"]
