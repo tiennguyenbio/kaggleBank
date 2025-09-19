@@ -98,7 +98,7 @@ docker build -t bank_subscription_app .
 ```
 ### 2. Run Docker container
 ```bash
-run docker -d -p 8081:8000 bank_subscription_app
+docker run -d -p 8081:8000 bank_subscription_app
 ```
 API will be available at [127.0.0.1:8081](http://127.0.0.1:8081/)
 
@@ -106,3 +106,23 @@ API will be available at [127.0.0.1:8081](http://127.0.0.1:8081/)
 
 ### 1. Pull image from Docker Hub to localhost
 
+```bash
+docker pull tiennguyenbio/deposit
+```
+### 2. Run Docker container
+```bash
+docker run -p 8081:8000 tiennguyenbio/deposit
+```
+### 3. Stop, remove, and restart container
+```bash
+docker ps
+```
+Get CONTAINER ID
+
+```bash
+docker stop container_id
+docker rm container_id
+```
+```bash
+docker restart container_id
+```

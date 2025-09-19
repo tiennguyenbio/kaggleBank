@@ -39,15 +39,3 @@ def get_model_response(json_data, model):
             for p, l in zip(prediction, labels)
             ]
             }
-
-    # if prediction == 1:
-    #     label = 'Yes'
-    # else:
-    #     label = 'No'
-        
-    # Format the final response
-    # return {
-    #     'status': 200,
-    #     'label': label,
-    #     'prediction': int(prediction)
-    # }
