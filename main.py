@@ -7,9 +7,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
+from preprocessing import BankPreprocessor
 import joblib
 import gzip
-from preprocessing import BankPreprocessor
 
 # Load data
 train = pd.read_csv("train.csv")
@@ -23,7 +23,7 @@ train = train.drop(columns=['default','duration'])
 X = train.drop(columns=['y'])
 y = train['y']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
+    
 # Pipeline
 preprocessor = BankPreprocessor()
 model = RandomForestClassifier(random_state=42)
