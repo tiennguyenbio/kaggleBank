@@ -7,7 +7,7 @@ import pandas as pd
 from preprocessing import BankPreprocessor
 import os
 
-from flask import Flask
+from flask import Flask, send_file
 app = Flask(__name__)
 
 
@@ -50,6 +50,11 @@ def home():
 @app.route('/json_help')
 def json_help():
     return render_template('json_help.html')
+
+@app.route("/download-json")
+def download_json():
+    # The path must match where Docker copied it
+    return send_file("test_json_1.json", as_attachment=True)
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -125,4 +130,4 @@ def predict():
         submission_type=submission_type  # use this in JS to show/hide sections
     )
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app.run(host='0.0.0.0', port=7860, debug=True)
