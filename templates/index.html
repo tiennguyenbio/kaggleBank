@@ -156,7 +156,7 @@
 
     <!-- Upload Section -->
     <div id="upload-section" class="{% if submission_type != 'upload' %}hidden{% endif %}">
-      <form action="http://127.0.0.1:8000/predict" method="post" enctype="multipart/form-data">
+      <form action="http://127.0.0.1:7860/predict" method="post" enctype="multipart/form-data">
         <div>
           <label for="json_file" style="font-weight: bold; color: #008b8b;">Upload JSON File</label>
           <input type="file" id="json_file" name="json_file" accept=".json" 
@@ -181,19 +181,19 @@
 
     <!-- Manual Input Section -->
     <div id="manual-section" class="{% if submission_type != 'manual' %}hidden{% endif %}">
-      <form action="http://127.0.0.1:8000/predict" method="post">
+      <form action="http://127.0.0.1:7860/predict" method="post">
         <div class="form-grid">
           <div>
             <label for="id">ID</label>
             <input type="number" id="id" name="id" placeholder="e.g. 750000"
-                   value="{{ request.form.get('id', '') }}" required min="1" step="1" />
+                  value="{{ request.form.get('id', 750001) }}" required min="1" step="1" />
             <div class="note">Positive integer only</div>
           </div>
 
           <div>
             <label for="age">Age</label>
             <input type="number" id="age" name="age" placeholder="e.g. 32"
-                   value="{{ request.form.get('age', '') }}" required min="18" max="300" />
+                  value="{{ request.form.get('age', 35) }}" required min="18" max="300" />
           </div>
 
           <div>
@@ -201,7 +201,7 @@
             <select id="job" name="job" required>
               <option value="" disabled {% if not request.form.get('job') %}selected{% endif %}>Select your job</option>
               {% for j in ['admin','blue-collar','entrepreneur','housemaid','management','retired','self-employed','services','student','technician','unemployed','unknown'] %}
-                <option value="{{ j }}" {% if request.form.get('job')==j %}selected{% endif %}>{{ j.replace('-', ' ').title() }}</option>
+                <option value="{{ j }}" {% if request.form.get('job', 'technician') == j %}selected{% endif %}>{{ j.replace('-', ' ').title() }}</option>
               {% endfor %}
             </select>
           </div>
@@ -211,7 +211,7 @@
             <select id="marital" name="marital" required>
               <option value="" disabled {% if not request.form.get('marital') %}selected{% endif %}>Select marital status</option>
               {% for m in ['single','married','divorced'] %}
-                <option value="{{ m }}" {% if request.form.get('marital')==m %}selected{% endif %}>{{ m.title() }}</option>
+                <option value="{{ m }}" {% if request.form.get('marital', 'single') == m %}selected{% endif %}>{{ m.title() }}</option>
               {% endfor %}
             </select>
           </div>
@@ -221,7 +221,7 @@
             <select id="education" name="education" required>
               <option value="" disabled {% if not request.form.get('education') %}selected{% endif %}>Select education level</option>
               {% for e in ['primary','secondary','tertiary','unknown'] %}
-                <option value="{{ e }}" {% if request.form.get('education')==e %}selected{% endif %}>{{ e.title() }}</option>
+                <option value="{{ e }}" {% if request.form.get('education', 'tertiary') == e %}selected{% endif %}>{{ e.title() }}</option>
               {% endfor %}
             </select>
           </div>
@@ -229,15 +229,15 @@
           <div>
             <label for="balance">Average Yearly Balance (€)</label>
             <input type="number" id="balance" name="balance" placeholder="e.g. 1397"
-                   value="{{ request.form.get('balance', '') }}" required step="any" />
+                  value="{{ request.form.get('balance', 1500) }}" required step="any" />
           </div>
 
           <div>
             <label for="housing">Housing Loan</label>
             <select id="housing" name="housing" required>
               <option value="" disabled {% if not request.form.get('housing') %}selected{% endif %}>Has housing loan?</option>
-              <option value="yes" {% if request.form.get('housing')=='yes' %}selected{% endif %}>Yes</option>
-              <option value="no" {% if request.form.get('housing')=='no' %}selected{% endif %}>No</option>
+              <option value="yes" {% if request.form.get('housing', 'no')=='yes' %}selected{% endif %}>Yes</option>
+              <option value="no" {% if request.form.get('housing', 'no')=='no' %}selected{% endif %}>No</option>
             </select>
           </div>
 
@@ -245,8 +245,8 @@
             <label for="loan">Personal Loan</label>
             <select id="loan" name="loan" required>
               <option value="" disabled {% if not request.form.get('loan') %}selected{% endif %}>Has personal loan?</option>
-              <option value="yes" {% if request.form.get('loan')=='yes' %}selected{% endif %}>Yes</option>
-              <option value="no" {% if request.form.get('loan')=='no' %}selected{% endif %}>No</option>
+              <option value="yes" {% if request.form.get('loan', 'no')=='yes' %}selected{% endif %}>Yes</option>
+              <option value="no" {% if request.form.get('loan', 'no')=='no' %}selected{% endif %}>No</option>
             </select>
           </div>
 
@@ -255,7 +255,7 @@
             <select id="contact" name="contact" required>
               <option value="" disabled {% if not request.form.get('contact') %}selected{% endif %}>Select contact type</option>
               {% for c in ['cellular','telephone','unknown'] %}
-                <option value="{{ c }}" {% if request.form.get('contact')==c %}selected{% endif %}>{{ c.title() }}</option>
+                <option value="{{ c }}" {% if request.form.get('contact', 'cellular') == c %}selected{% endif %}>{{ c.title() }}</option>
               {% endfor %}
             </select>
           </div>
@@ -265,7 +265,7 @@
             <select id="day" name="day" required>
               <option value="" disabled selected>Select day of the month</option>
               {% for d in range(1, 32) %}
-                <option value="{{ d }}" {% if request.form.get('day') == d|string %}selected{% endif %}>{{ d }}</option>
+                <option value="{{ d }}" {% if request.form.get('day', '15') == d|string %}selected{% endif %}>{{ d }}</option>
               {% endfor %}
             </select>
           </div>
@@ -275,7 +275,7 @@
             <select id="month" name="month" required>
               <option value="" disabled>Select month</option>
               {% for m, name in [('jan','January'),('feb','February'),('mar','March'),('apr','April'),('may','May'),('jun','June'),('jul','July'),('aug','August'),('sep','September'),('oct','October'),('nov','November'),('dec','December')] %}
-                <option value="{{ m }}" {% if request.form.get('month')==m %}selected{% endif %}>{{ name }}</option>
+                <option value="{{ m }}" {% if request.form.get('month', 'jun')==m %}selected{% endif %}>{{ name }}</option>
               {% endfor %}
             </select>
           </div>
@@ -283,21 +283,21 @@
           <div>
             <label for="campaign">Total Contacts This Campaign</label>
             <input type="number" id="campaign" name="campaign" min="0"
-                    placeholder="Including this call"
-                    value="{{ request.form.get('campaign', '') }}" required />
+                  placeholder="Including this call"
+                  value="{{ request.form.get('campaign', 1) }}" required />
           </div>       
 
           <div>
             <label for="pdays">Days Since Previous Contact</label>
             <input type="number" id="pdays" name="pdays"
-                   placeholder="-1 if not contacted before"
-                   value="{{ request.form.get('pdays', '') }}" required />
+                  placeholder="-1 if not contacted before"
+                  value="{{ request.form.get('pdays', -1) }}" required />
           </div>
 
           <div>
             <label for="previous">Total Contacts Before This Campaign</label>
             <input type="number" id="previous" name="previous" min="0" placeholder="e.g. 1"
-                   value="{{ request.form.get('previous', '') }}" required />
+                  value="{{ request.form.get('previous', 0) }}" required />
           </div>
 
           <div>
@@ -305,7 +305,7 @@
             <select id="poutcome" name="poutcome" required>
               <option value="" disabled>Select previous outcome</option>
               {% for p in ['success','failure','unknown'] %}
-                <option value="{{ p }}" {% if request.form.get('poutcome')==p %}selected{% endif %}>{{ p.title() }}</option>
+                <option value="{{ p }}" {% if request.form.get('poutcome', 'unknown')==p %}selected{% endif %}>{{ p.title() }}</option>
               {% endfor %}
             </select>
           </div>
