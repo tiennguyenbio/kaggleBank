@@ -1,5 +1,7 @@
 # Bank Deposit Prediction Application
 
+Try it online: [HuggingFace Space Demo](https://huggingface.co/spaces/tiennguyenbio/bank-deposit)
+
 A **Flask web application** to predict whether a client will subscribe to a bank product, containerized with **Docker** for easy deployment.
 
 ---
